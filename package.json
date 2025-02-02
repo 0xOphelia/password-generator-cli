@@ -1,0 +1,24 @@
+{
+  "name": "password-generator-cli",
+  "version": "1.0.0",
+  "description": "A command-line password generator tool",
+  "main": "index.js",
+  "bin": {
+    "passgen": "./bin/passgen.js"
+  },
+  "scripts": {
+    "start": "node bin/passgen.js"
+  },
+  "keywords": [
+    "password",
+    "generator",
+    "cli",
+    "security",
+    "random"
+  ],
+  "author": "0xOphelia",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^9.0.0"
+  }
+}
