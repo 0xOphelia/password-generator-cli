@@ -2,6 +2,7 @@
 
 const { program } = require('commander');
 const crypto = require('crypto');
+const { checkPasswordStrength } = require('../src/validator');
 
 program
   .name('passgen')
@@ -14,6 +15,7 @@ program
   .option('-s, --symbols', 'include symbols')
   .option('-u, --uppercase', 'include uppercase letters')
   .option('--no-lowercase', 'exclude lowercase letters')
+  .option('-c, --check', 'show password strength')
   .action((options) => {
     const length = parseInt(options.length);
     let charset = '';
@@ -32,6 +34,15 @@ program
     }
     
     console.log(password);
+    
+    if (options.check) {
+      const result = checkPasswordStrength(password);
+      console.log(`\nStrength: ${result.strength} (${result.score}/${result.maxScore})`);
+      if (result.feedback.length > 0) {
+        console.log('Suggestions:');
+        result.feedback.forEach(suggestion => console.log(`  - ${suggestion}`));
+      }
+    }
   });
 
 program.parse();
