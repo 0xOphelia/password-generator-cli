@@ -16,8 +16,11 @@ program
   .option('-u, --uppercase', 'include uppercase letters')
   .option('--no-lowercase', 'exclude lowercase letters')
   .option('-c, --check', 'show password strength')
+  .option('-b, --batch <number>', 'generate multiple passwords')
   .action((options) => {
     const length = parseInt(options.length);
+    const batchCount = options.batch ? parseInt(options.batch) : 1;
+    
     let charset = '';
     
     if (options.lowercase) charset += 'abcdefghijklmnopqrstuvwxyz';
@@ -27,20 +30,27 @@ program
     
     if (!charset) charset = 'abcdefghijklmnopqrstuvwxyz';
     
-    let password = '';
-    for (let i = 0; i < length; i++) {
-      const randomIndex = crypto.randomInt(0, charset.length);
-      password += charset[randomIndex];
+    function generatePassword() {
+      let password = '';
+      for (let i = 0; i < length; i++) {
+        const randomIndex = crypto.randomInt(0, charset.length);
+        password += charset[randomIndex];
+      }
+      return password;
     }
     
-    console.log(password);
-    
-    if (options.check) {
-      const result = checkPasswordStrength(password);
-      console.log(`\nStrength: ${result.strength} (${result.score}/${result.maxScore})`);
-      if (result.feedback.length > 0) {
-        console.log('Suggestions:');
-        result.feedback.forEach(suggestion => console.log(`  - ${suggestion}`));
+    for (let i = 0; i < batchCount; i++) {
+      const password = generatePassword();
+      console.log(password);
+      
+      if (options.check) {
+        const result = checkPasswordStrength(password);
+        console.log(`  Strength: ${result.strength} (${result.score}/${result.maxScore})`);
+        if (result.feedback.length > 0 && batchCount === 1) {
+          console.log('  Suggestions:');
+          result.feedback.forEach(suggestion => console.log(`    - ${suggestion}`));
+        }
+        if (i < batchCount - 1) console.log('');
       }
     }
   });

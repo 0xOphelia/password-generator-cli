@@ -21,6 +21,8 @@ Options:
 - `-s, --symbols` - Include symbols  
 - `-u, --uppercase` - Include uppercase letters
 - `--no-lowercase` - Exclude lowercase letters
+- `-c, --check` - Show password strength analysis
+- `-b, --batch <number>` - Generate multiple passwords
 
 ## Examples
 
@@ -30,4 +32,10 @@ passgen -l 16 -n
 
 # Complex password with all character types
 passgen -l 20 -n -s -u
+
+# Generate password with strength check
+passgen -l 15 -n -s -u -c
+
+# Generate 5 passwords at once
+passgen -b 5 -n -u
 ```
