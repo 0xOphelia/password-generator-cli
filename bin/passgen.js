@@ -26,7 +26,7 @@ program
     
     let charset = '';
     
-    if (options.lowercase) charset += 'abcdefghijklmnopqrstuvwxyz';
+    if (options.lowercase !== false) charset += 'abcdefghijklmnopqrstuvwxyz';
     if (options.uppercase) charset += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     if (options.numbers) charset += '0123456789';
     if (options.symbols) charset += '!@#$%^&*()_+-=[]{}|;:,.<>?';
