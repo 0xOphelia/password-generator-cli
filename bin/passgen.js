@@ -4,6 +4,7 @@ const { program } = require('commander');
 const crypto = require('crypto');
 const { checkPasswordStrength } = require('../src/validator');
 const { loadConfig, saveConfig } = require('../src/config');
+const { listTemplates, generateFromTemplate } = require('../src/templates');
 
 const config = loadConfig();
 
@@ -20,20 +21,25 @@ program
   .option('--no-lowercase', 'exclude lowercase letters')
   .option('-c, --check', 'show password strength', config.showStrength)
   .option('-b, --batch <number>', 'generate multiple passwords')
+  .option('-t, --template <name>', 'use a password template')
   .action((options) => {
-    const length = parseInt(options.length);
     const batchCount = options.batch ? parseInt(options.batch) : 1;
     
-    let charset = '';
-    
-    if (options.lowercase !== false) charset += 'abcdefghijklmnopqrstuvwxyz';
-    if (options.uppercase) charset += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    if (options.numbers) charset += '0123456789';
-    if (options.symbols) charset += '!@#$%^&*()_+-=[]{}|;:,.<>?';
-    
-    if (!charset) charset = 'abcdefghijklmnopqrstuvwxyz';
-    
     function generatePassword() {
+      if (options.template) {
+        return generateFromTemplate(options.template);
+      }
+      
+      const length = parseInt(options.length);
+      let charset = '';
+      
+      if (options.lowercase !== false) charset += 'abcdefghijklmnopqrstuvwxyz';
+      if (options.uppercase) charset += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      if (options.numbers) charset += '0123456789';
+      if (options.symbols) charset += '!@#$%^&*()_+-=[]{}|;:,.<>?';
+      
+      if (!charset) charset = 'abcdefghijklmnopqrstuvwxyz';
+      
       let password = '';
       for (let i = 0; i < length; i++) {
         const randomIndex = crypto.randomInt(0, charset.length);
@@ -43,17 +49,22 @@ program
     }
     
     for (let i = 0; i < batchCount; i++) {
-      const password = generatePassword();
-      console.log(password);
-      
-      if (options.check) {
-        const result = checkPasswordStrength(password);
-        console.log(`  Strength: ${result.strength} (${result.score}/${result.maxScore})`);
-        if (result.feedback.length > 0 && batchCount === 1) {
-          console.log('  Suggestions:');
-          result.feedback.forEach(suggestion => console.log(`    - ${suggestion}`));
+      try {
+        const password = generatePassword();
+        console.log(password);
+        
+        if (options.check) {
+          const result = checkPasswordStrength(password);
+          console.log(`  Strength: ${result.strength} (${result.score}/${result.maxScore})`);
+          if (result.feedback.length > 0 && batchCount === 1) {
+            console.log('  Suggestions:');
+            result.feedback.forEach(suggestion => console.log(`    - ${suggestion}`));
+          }
+          if (i < batchCount - 1) console.log('');
         }
-        if (i < batchCount - 1) console.log('');
+      } catch (error) {
+        console.error(`Error: ${error.message}`);
+        return;
       }
     }
   });
@@ -89,6 +100,26 @@ program
       
       saveConfig(newConfig);
     }
+  });
+
+program
+  .command('templates')
+  .description('list available password templates')
+  .action(() => {
+    console.log('Available templates:');
+    const templates = listTemplates();
+    templates.forEach(template => {
+      console.log(`\n${template.name}:`);
+      console.log(`  Length: ${template.length}`);
+      console.log(`  Description: ${template.description}`);
+      console.log(`  Features: ${[
+        template.includeUppercase && 'uppercase',
+        template.includeLowercase && 'lowercase', 
+        template.includeNumbers && 'numbers',
+        template.includeSymbols && 'symbols'
+      ].filter(Boolean).join(', ')}`);
+    });
+    console.log('\nUsage: passgen -t <template-name>');
   });
 
 program.parse();
