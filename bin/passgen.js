@@ -11,7 +11,7 @@ const config = loadConfig();
 program
   .name('passgen')
   .description('CLI password generator')
-  .version('1.0.0');
+  .version('1.2.0');
 
 program
   .option('-l, --length <number>', 'password length', config.length.toString())
